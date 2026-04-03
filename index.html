@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CloudDrop</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -166,14 +166,14 @@
     <h1>Cloud<span>Drop</span></h1>
     <p class="subtitle">Upload a file. Get a shareable link. Simple.</p>
 
-    <div class="upload-area" id="uploadArea">
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
       <div class="icon">☁️</div>
       <p id="fileLabel">Click to select a file</p>
     </div>
 
-    <input type="file" id="fileInput" />
+    <input type="file" id="fileInput" onchange="handleFileSelect(event)" />
 
-    <button id="uploadBtn" disabled>Upload</button>
+    <button id="uploadBtn" onclick="uploadFile()" disabled>Upload</button>
 
     <div class="progress-bar-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
@@ -185,7 +185,7 @@
       <p>Your shareable link (expires in 24 hours):</p>
       <div class="link-row">
         <input type="text" id="shareLink" readonly />
-        <button id="copyBtn">Copy</button>
+        <button onclick="copyLink()">Copy</button>
       </div>
       <p class="expiry" id="expiryTime"></p>
     </div>
@@ -198,36 +198,12 @@
 
     let selectedFile = null;
 
-    document.addEventListener('DOMContentLoaded', function() {
-      // Clicking the upload area triggers file input
-      document.getElementById('uploadArea').addEventListener('click', function() {
-        document.getElementById('fileInput').click();
-      });
-
-      // File selection
-      document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-
-      // Upload button
-      document.getElementById('uploadBtn').addEventListener('click', uploadFile);
-
-      // Copy button
-      document.getElementById('copyBtn').addEventListener('click', copyLink);
-    });
-
     function handleFileSelect(event) {
       selectedFile = event.target.files[0];
-      if (!selectedFile) return;
-
-      // Check file size
-      if (selectedFile.size > 10 * 1024 * 1024) { // 10MB limit
-        alert("File too large. Max 10MB allowed.");
-        document.getElementById('fileLabel').textContent = "Click to select a file";
-        document.getElementById('uploadBtn').disabled = true;
-        return;
+      if (selectedFile) {
+        document.getElementById('fileLabel').textContent = `Selected: ${selectedFile.name}`;
+        document.getElementById('uploadBtn').disabled = false;
       }
-
-      document.getElementById('fileLabel').textContent = `Selected: ${selectedFile.name}`;
-      document.getElementById('uploadBtn').disabled = false;
     }
 
     async function uploadFile() {
@@ -272,15 +248,14 @@
       } catch (err) {
         document.getElementById('status').textContent = "Something went wrong. Try again.";
         document.getElementById('uploadBtn').disabled = false;
-        console.error("Upload error:", err);
+        console.error(err);
       }
     }
 
     function copyLink() {
       const link = document.getElementById('shareLink');
-      navigator.clipboard.writeText(link.value)
-        .then(() => alert("Link copied to clipboard!"))
-        .catch(() => alert("Failed to copy link."));
+      navigator.clipboard.writeText(link.value);
+      alert("Link copied to clipboard!");
     }
   </script>
 </body>
