@@ -6,12 +6,6 @@
   <title>CloudDrop</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
       background: #0f0f0f;
       color: #fff;
@@ -21,7 +15,6 @@
       align-items: center;
       min-height: 100vh;
     }
-
     .container {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
@@ -31,23 +24,9 @@
       max-width: 500px;
       text-align: center;
     }
-
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 8px;
-      color: #fff;
-    }
-
-    h1 span {
-      color: #6c63ff;
-    }
-
-    p.subtitle {
-      color: #888;
-      margin-bottom: 32px;
-      font-size: 0.95rem;
-    }
-
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    h1 span { color: #6c63ff; }
+    p.subtitle { color: #888; margin-bottom: 32px; font-size: 0.95rem; }
     .upload-area {
       border: 2px dashed #2a2a2a;
       border-radius: 12px;
@@ -56,43 +35,18 @@
       transition: border-color 0.3s;
       margin-bottom: 20px;
     }
-
-    .upload-area:hover {
-      border-color: #6c63ff;
-    }
-
-    .upload-area p {
-      color: #555;
-      font-size: 0.9rem;
-    }
-
-    .upload-area .icon {
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    #fileLabel.selected {
-      color: #6c63ff;
-      font-weight: bold;
-    }
-
-    .preview {
-      margin-top: 12px;
-      font-size: 0.85rem;
-      color: #aaa;
-    }
-
+    .upload-area:hover { border-color: #6c63ff; }
+    .upload-area p { color: #555; font-size: 0.9rem; }
+    .upload-area .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    input[type="file"] { display: none; }
+    #fileLabel.selected { color: #6c63ff; font-weight: bold; }
+    .preview { margin-top: 12px; font-size: 0.85rem; color: #aaa; }
     .preview img {
       margin-top: 8px;
       max-width: 100%;
       border-radius: 8px;
       border: 1px solid #2a2a2a;
     }
-
     button {
       background: #6c63ff;
       color: #fff;
@@ -104,16 +58,8 @@
       width: 100%;
       transition: background 0.3s;
     }
-
-    button:hover {
-      background: #574fd6;
-    }
-
-    button:disabled {
-      background: #333;
-      cursor: not-allowed;
-    }
-
+    button:hover { background: #574fd6; }
+    button:disabled { background: #333; cursor: not-allowed; }
     .progress-bar-container {
       background: #2a2a2a;
       border-radius: 8px;
@@ -121,7 +67,6 @@
       margin-top: 20px;
       display: none;
     }
-
     .progress-bar {
       background: #6c63ff;
       height: 100%;
@@ -129,13 +74,7 @@
       width: 0%;
       transition: width 0.3s;
     }
-
-    .status {
-      margin-top: 16px;
-      font-size: 0.9rem;
-      color: #888;
-    }
-
+    .status { margin-top: 16px; font-size: 0.9rem; color: #888; }
     .result-box {
       margin-top: 24px;
       background: #111;
@@ -144,18 +83,8 @@
       padding: 16px;
       display: none;
     }
-
-    .result-box p {
-      font-size: 0.8rem;
-      color: #888;
-      margin-bottom: 8px;
-    }
-
-    .link-row {
-      display: flex;
-      gap: 8px;
-    }
-
+    .result-box p { font-size: 0.8rem; color: #888; margin-bottom: 8px; }
+    .link-row { display: flex; gap: 8px; }
     .link-row input {
       flex: 1;
       background: #1a1a1a;
@@ -165,18 +94,8 @@
       color: #fff;
       font-size: 0.8rem;
     }
-
-    .link-row button {
-      width: auto;
-      padding: 8px 16px;
-      font-size: 0.8rem;
-    }
-
-    .expiry {
-      margin-top: 8px;
-      font-size: 0.75rem;
-      color: #555;
-    }
+    .link-row button { width: auto; padding: 8px 16px; font-size: 0.8rem; }
+    .expiry { margin-top: 8px; font-size: 0.75rem; color: #555; }
   </style>
 </head>
 <body>
@@ -211,80 +130,80 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://zirjpahjfipudvkcnwwv.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    document.addEventListener("DOMContentLoaded", () => {
+      const { createClient } = supabase;
+      const client = createClient(
+        "https://zirjpahjfipudvkcnwwv.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcmpwYWhqZmlwdWR2a2Nud3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MjYsImV4cCI6MjA5MDgwNDYyNn0.ggduZZM1pDhK8a5RBdIx6gR9x2bqn5CtzUbt7l3VQeg" // replace with your real anon key
+      );
 
-    let selectedFile = null;
+      let selectedFile = null;
 
-    function handleFileSelect(event) {
-      selectedFile = event.target.files[0];
-      if (selectedFile) {
-        const label = document.getElementById('fileLabel');
-        const preview = document.getElementById('filePreview');
-        label.textContent = `Selected: ${selectedFile.name} (${Math.round(selectedFile.size/1024)} KB)`;
-        label.classList.add('selected');
+      window.handleFileSelect = function(event) {
+        selectedFile = event.target.files[0];
+        if (selectedFile) {
+          const label = document.getElementById('fileLabel');
+          const preview = document.getElementById('filePreview');
+          label.textContent = `Selected: ${selectedFile.name} (${Math.round(selectedFile.size/1024)} KB)`;
+          label.classList.add('selected');
 
-        // Show preview if image
-        preview.innerHTML = "";
-        if (selectedFile.type.startsWith("image/")) {
-          const img = document.createElement("img");
-          img.src = URL.createObjectURL(selectedFile);
-          preview.appendChild(img);
+          preview.innerHTML = "";
+          if (selectedFile.type.startsWith("image/")) {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(selectedFile);
+            preview.appendChild(img);
+          }
+
+          document.getElementById('uploadBtn').disabled = false;
         }
+      };
 
-        document.getElementById('uploadBtn').disabled = false;
-      }
-    }
+      window.uploadFile = async function() {
+        if (!selectedFile) return;
+        const fileName = `${Date.now()}-${selectedFile.name}`;
 
-    async function uploadFile() {
-      if (!selectedFile) return;
+        document.getElementById('uploadBtn').disabled = true;
+        document.getElementById('status').textContent = "Uploading to cloud...";
+        document.getElementById('progressContainer').style.display = "block";
+        document.getElementById('progressBar').style.width = "30%";
 
-      const fileName = `${Date.now()}-${selectedFile.name}`;
+        try {
+          const { error: uploadError } = await client.storage
+            .from('files')
+            .upload(fileName, selectedFile, { contentType: selectedFile.type });
 
-      document.getElementById('uploadBtn').disabled = true;
-      document.getElementById('status').textContent = "Uploading to cloud...";
-      document.getElementById('progressContainer').style.display = "block";
-      document.getElementById('progressBar').style.width = "30%";
+          if (uploadError) throw uploadError;
 
-      try {
-        const { error: uploadError } = await supabase.storage
-          .from('files')
-          .upload(fileName, selectedFile, {
-            contentType: selectedFile.type,
-          });
+          document.getElementById('progressBar').style.width = "70%";
+          document.getElementById('status').textContent = "Generating shareable link...";
 
-        if (uploadError) throw uploadError;
+          const { data, error: urlError } = await client.storage
+            .from('files')
+            .createSignedUrl(fileName, 86400);
 
-        document.getElementById('progressBar').style.width = "70%";
-        document.getElementById('status').textContent = "Generating shareable link...";
+          if (urlError) throw urlError;
 
-        const { data, error: urlError } = await supabase.storage
-          .from('files')
-          .createSignedUrl(fileName, 86400);
+          document.getElementById('progressBar').style.width = "100%";
+          document.getElementById('status').textContent = "Done!";
 
-        if (urlError) throw urlError;
+          const expiry = new Date(Date.now() + 86400000);
+          document.getElementById('shareLink').value = data.signedUrl;
+          document.getElementById('expiryTime').textContent = `Expires: ${expiry.toLocaleString()}`;
+          document.getElementById('resultBox').style.display = "block";
 
-        document.getElementById('progressBar').style.width = "100%";
-        document.getElementById('status').textContent = "Done!";
+        } catch (err) {
+          document.getElementById('status').textContent = "Something went wrong. Check console.";
+          document.getElementById('uploadBtn').disabled = false;
+          console.error(err);
+        }
+      };
 
-        const expiry = new Date(Date.now() + 86400000);
-        document.getElementById('shareLink').value = data.signedUrl;
-        document.getElementById('expiryTime').textContent = `Expires: ${expiry.toLocaleString()}`;
-        document.getElementById('resultBox').style.display = "block";
-
-      } catch (err) {
-        document.getElementById('status').textContent = "Something went wrong. Try again.";
-        document.getElementById('uploadBtn').disabled = false;
-        console.error(err);
-      }
-    }
-
-    function copyLink() {
-      const link = document.getElementById('shareLink');
-      navigator.clipboard.writeText(link.value);
-      alert("Link copied to clipboard!");
-    }
+      window.copyLink = function() {
+        const link = document.getElementById('shareLink');
+        navigator.clipboard.writeText(link.value);
+        alert("Link copied to clipboard!");
+      };
+    });
   </script>
 </body>
 </html>
