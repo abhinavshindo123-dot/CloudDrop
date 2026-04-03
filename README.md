@@ -1,22 +1,34 @@
 # CloudDrop
-CloudDrop is a simple, lightweight web app for sharing files through Supabase Storage. It lets you:
+CloudDrop
 
-    Upload files directly from your browser.
+CloudDrop is a streamlined file‑sharing application built with HTML, CSS, and JavaScript, powered by Supabase Storage. It provides a secure and user‑friendly way to upload files and instantly generate shareable links.
+Features
 
-    Preview selected files (with image thumbnails).
+    File Uploads: Select files through a clean interface with optional image previews.
 
-    Generate signed shareable links that automatically expire after 24 hours.
+    Progress Tracking: Real‑time progress bar and status updates during upload.
 
-    Copy links easily with one click.
+    Secure Links: Generates signed URLs that expire automatically after 24 hours.
 
-    Track upload progress with a clean progress bar and status messages.
+    One‑Click Copy: Easily copy shareable links to the clipboard.
 
-Built with HTML, CSS, and vanilla JavaScript, CloudDrop uses the Supabase client library to handle secure uploads and signed URL generation. The design emphasizes minimalism and ease of use — just select a file, upload, and share.
+    Minimalist Design: Modern dark‑themed UI focused on simplicity and usability.
+
 Tech Stack
 
-    Frontend: HTML, CSS, JavaScript
+    Frontend: HTML, CSS, Vanilla JavaScript
 
-    Backend/Storage: Supabase Storage + Row Level Security policies
+    Backend/Storage: Supabase Storage with Row Level Security (RLS) policies
 
     Deployment: Vercel
+
+Setup
+
+    Create a Supabase project and a storage bucket (e.g., files).
+
+    Configure Row Level Security policies to allow uploads and reads.
+
+    Replace the placeholder SUPABASE_URL and SUPABASE_ANON_KEY in the code with your project values.
+
+    Deploy the app (e.g., via Vercel) and start sharing files.
 
