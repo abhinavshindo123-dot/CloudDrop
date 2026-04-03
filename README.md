@@ -1,5 +1,4 @@
 # CloudDrop
-CloudDrop
 
 CloudDrop is a streamlined file‑sharing application built with HTML, CSS, and JavaScript, powered by Supabase Storage. It provides a secure and user‑friendly way to upload files and instantly generate shareable links.
 Features
