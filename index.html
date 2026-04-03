@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CloudDrop</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0f0f0f;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    h1 span {
+      color: #6c63ff;
+    }
+
+    p.subtitle {
+      color: #888;
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+
+    .upload-area {
+      border: 2px dashed #2a2a2a;
+      border-radius: 12px;
+      padding: 40px 20px;
+      cursor: pointer;
+      transition: border-color 0.3s;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover {
+      border-color: #6c63ff;
+    }
+
+    .upload-area p {
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .upload-area .icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    button {
+      background: #6c63ff;
+      color: #fff;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #574fd6;
+    }
+
+    button:disabled {
+      background: #333;
+      cursor: not-allowed;
+    }
+
+    .progress-bar-container {
+      background: #2a2a2a;
+      border-radius: 8px;
+      height: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .progress-bar {
+      background: #6c63ff;
+      height: 100%;
+      border-radius: 8px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .status {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .result-box {
+      margin-top: 24px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 16px;
+      display: none;
+    }
+
+    .result-box p {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .link-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .link-row input {
+      flex: 1;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.8rem;
+    }
+
+    .link-row button {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+    }
+
+    .expiry {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cloud<span>Drop</span></h1>
+    <p class="subtitle">Upload a file. Get a shareable link. Simple.</p>
+
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">☁️</div>
+      <p id="fileLabel">Click to select a file</p>
+    </div>
+
+    <input type="file" id="fileInput" onchange="handleFileSelect(event)" />
+
+    <button id="uploadBtn" onclick="uploadFile()" disabled>Upload</button>
+
+    <div class="progress-bar-container" id="progressContainer">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <p class="status" id="status"></p>
+
+    <div class="result-box" id="resultBox">
+      <p>Your shareable link (expires in 24 hours):</p>
+      <div class="link-row">
+        <input type="text" id="shareLink" readonly />
+        <button onclick="copyLink()">Copy</button>
+      </div>
+      <p class="expiry" id="expiryTime"></p>
+    </div>
+  </div>
+
+  <script>
+    const LAMBDA_URL = "https://zabqhwnlcikvw3rql7w726bg640itgza.lambda-url.us-east-1.on.aws/";
+    let selectedFile = null;
+
+    function handleFileSelect(event) {
+      selectedFile = event.target.files[0];
+      if (selectedFile) {
+        document.getElementById('fileLabel').textContent = `Selected: ${selectedFile.name}`;
+        document.getElementById('uploadBtn').disabled = false;
+      }
+    }
+
+    async function uploadFile() {
+      if (!selectedFile) return;
+
+      const fileName = selectedFile.name;
+      const fileType = selectedFile.type || "application/octet-stream";
+
+      document.getElementById('uploadBtn').disabled = true;
+      document.getElementById('status').textContent = "Getting upload link...";
+      document.getElementById('progressContainer').style.display = "block";
+      document.getElementById('progressBar').style.width = "20%";
+
+      try {
+        // Step 1 - get upload URL from Lambda
+        const uploadRes = await fetch(`${LAMBDA_URL}?action=upload&fileName=${encodeURIComponent(fileName)}&fileType=${encodeURIComponent(fileType)}`);
+        const uploadData = await uploadRes.json();
+        const uploadUrl = uploadData.url;
+
+        document.getElementById('status').textContent = "Uploading file to cloud...";
+        document.getElementById('progressBar').style.width = "50%";
+
+        // Step 2 - upload file directly to S3
+        await fetch(uploadUrl, {
+          method: "PUT",
+          body: selectedFile,
+          headers: { "Content-Type": fileType }
+        });
+
+        document.getElementById('progressBar').style.width = "80%";
+        document.getElementById('status').textContent = "Generating shareable link...";
+
+        // Step 3 - get download URL from Lambda
+        const downloadRes = await fetch(`${LAMBDA_URL}?action=download&fileName=${encodeURIComponent(fileName)}`);
+        const downloadData = await downloadRes.json();
+        const downloadUrl = downloadData.url;
+
+        document.getElementById('progressBar').style.width = "100%";
+        document.getElementById('status').textContent = "Done!";
+
+        // Step 4 - show the shareable link
+        const expiry = new Date(Date.now() + 86400000);
+        document.getElementById('shareLink').value = downloadUrl;
+        document.getElementById('expiryTime').textContent = `Expires: ${expiry.toLocaleString()}`;
+        document.getElementById('resultBox').style.display = "block";
+
+      } catch (err) {
+        document.getElementById('status').textContent = "Something went wrong. Try again.";
+        document.getElementById('uploadBtn').disabled = false;
+        console.error(err);
+      }
+    }
+
+    function copyLink() {
+      const link = document.getElementById('shareLink');
+      navigator.clipboard.writeText(link.value);
+      alert("Link copied to clipboard!");
+    }
+  </script>
+</body>
+</html>
