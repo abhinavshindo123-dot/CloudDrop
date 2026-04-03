@@ -75,6 +75,24 @@
       display: none;
     }
 
+    #fileLabel.selected {
+      color: #6c63ff;
+      font-weight: bold;
+    }
+
+    .preview {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .preview img {
+      margin-top: 8px;
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #2a2a2a;
+    }
+
     button {
       background: #6c63ff;
       color: #fff;
@@ -169,6 +187,7 @@
     <div class="upload-area" onclick="document.getElementById('fileInput').click()">
       <div class="icon">☁️</div>
       <p id="fileLabel">Click to select a file</p>
+      <div class="preview" id="filePreview"></div>
     </div>
 
     <input type="file" id="fileInput" onchange="handleFileSelect(event)" />
@@ -193,7 +212,7 @@
 
   <script>
     const SUPABASE_URL = "https://zirjpahjfipudvkcnwwv.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcmpwYWhqZmlwdWR2a2Nud3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MjYsImV4cCI6MjA5MDgwNDYyNn0.ggduZZM1pDhK8a5RBdIx6gR9x2bqn5CtzUbt7l3VQeg";
+    const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let selectedFile = null;
@@ -201,7 +220,19 @@
     function handleFileSelect(event) {
       selectedFile = event.target.files[0];
       if (selectedFile) {
-        document.getElementById('fileLabel').textContent = `Selected: ${selectedFile.name}`;
+        const label = document.getElementById('fileLabel');
+        const preview = document.getElementById('filePreview');
+        label.textContent = `Selected: ${selectedFile.name} (${Math.round(selectedFile.size/1024)} KB)`;
+        label.classList.add('selected');
+
+        // Show preview if image
+        preview.innerHTML = "";
+        if (selectedFile.type.startsWith("image/")) {
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(selectedFile);
+          preview.appendChild(img);
+        }
+
         document.getElementById('uploadBtn').disabled = false;
       }
     }
@@ -217,7 +248,6 @@
       document.getElementById('progressBar').style.width = "30%";
 
       try {
-        // Step 1 - upload file to Supabase Storage
         const { error: uploadError } = await supabase.storage
           .from('files')
           .upload(fileName, selectedFile, {
@@ -229,7 +259,6 @@
         document.getElementById('progressBar').style.width = "70%";
         document.getElementById('status').textContent = "Generating shareable link...";
 
-        // Step 2 - generate signed URL (24 hours = 86400 seconds)
         const { data, error: urlError } = await supabase.storage
           .from('files')
           .createSignedUrl(fileName, 86400);
@@ -239,7 +268,6 @@
         document.getElementById('progressBar').style.width = "100%";
         document.getElementById('status').textContent = "Done!";
 
-        // Step 3 - show the link
         const expiry = new Date(Date.now() + 86400000);
         document.getElementById('shareLink').value = data.signedUrl;
         document.getElementById('expiryTime').textContent = `Expires: ${expiry.toLocaleString()}`;
