@@ -166,14 +166,14 @@
     <h1>Cloud<span>Drop</span></h1>
     <p class="subtitle">Upload a file. Get a shareable link. Simple.</p>
 
-    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-area" id="uploadArea">
       <div class="icon">☁️</div>
       <p id="fileLabel">Click to select a file</p>
     </div>
 
-    <input type="file" id="fileInput" onchange="handleFileSelect(event)" />
+    <input type="file" id="fileInput" />
 
-    <button id="uploadBtn" onclick="uploadFile()" disabled>Upload</button>
+    <button id="uploadBtn" disabled>Upload</button>
 
     <div class="progress-bar-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
@@ -185,94 +185,103 @@
       <p>Your shareable link (expires in 24 hours):</p>
       <div class="link-row">
         <input type="text" id="shareLink" readonly />
-        <button onclick="copyLink()">Copy</button>
+        <button id="copyBtn">Copy</button>
       </div>
       <p class="expiry" id="expiryTime"></p>
     </div>
   </div>
-<script>
-  const SUPABASE_URL = "https://zirjpahjfipudvkcnwwv.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcmpwYWhqZmlwdWR2a2Nud3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MjYsImV4cCI6MjA5MDgwNDYyNn0.ggduZZM1pDhK8a5RBdIx6gR9x2bqn5CtzUbt7l3VQeg";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  let selectedFile = null;
+  <script>
+    const SUPABASE_URL = "https://zirjpahjfipudvkcnwwv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcmpwYWhqZmlwdWR2a2Nud3d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjg2MjYsImV4cCI6MjA5MDgwNDYyNn0.ggduZZM1pDhK8a5RBdIx6gR9x2bqn5CtzUbt7l3VQeg";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Wait for DOM to be fully loaded
-  document.addEventListener('DOMContentLoaded', function() {
-    // Attach event listeners
-    document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-    document.getElementById('uploadBtn').addEventListener('click', uploadFile);
-  });
+    let selectedFile = null;
 
-  function handleFileSelect(event) {
-    selectedFile = event.target.files[0];
-    if (!selectedFile) return;
+    document.addEventListener('DOMContentLoaded', function() {
+      // Clicking the upload area triggers file input
+      document.getElementById('uploadArea').addEventListener('click', function() {
+        document.getElementById('fileInput').click();
+      });
 
-    // Check file size
-    if (selectedFile.size > 10 * 1024 * 1024) { // 10MB limit
-      alert("File too large. Max 10MB allowed.");
-      document.getElementById('fileLabel').textContent = "Click to select a file";
-      document.getElementById('uploadBtn').disabled = true;
-      return;
-    }
+      // File selection
+      document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
-    document.getElementById('fileLabel').textContent = `Selected: ${selectedFile.name}`;
-    document.getElementById('uploadBtn').disabled = false;
-  }
+      // Upload button
+      document.getElementById('uploadBtn').addEventListener('click', uploadFile);
 
-  async function uploadFile() {
-    if (!selectedFile) return;
+      // Copy button
+      document.getElementById('copyBtn').addEventListener('click', copyLink);
+    });
 
-    const fileName = `${Date.now()}-${selectedFile.name}`;
+    function handleFileSelect(event) {
+      selectedFile = event.target.files[0];
+      if (!selectedFile) return;
 
-    document.getElementById('uploadBtn').disabled = true;
-    document.getElementById('status').textContent = "Uploading to cloud...";
-    document.getElementById('progressContainer').style.display = "block";
-    document.getElementById('progressBar').style.width = "30%";
+      // Check file size
+      if (selectedFile.size > 10 * 1024 * 1024) { // 10MB limit
+        alert("File too large. Max 10MB allowed.");
+        document.getElementById('fileLabel').textContent = "Click to select a file";
+        document.getElementById('uploadBtn').disabled = true;
+        return;
+      }
 
-    try {
-      // Step 1 - upload file to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('files')
-        .upload(fileName, selectedFile, {
-          contentType: selectedFile.type,
-        });
-
-      if (uploadError) throw uploadError;
-
-      document.getElementById('progressBar').style.width = "70%";
-      document.getElementById('status').textContent = "Generating shareable link...";
-
-      // Step 2 - generate signed URL (24 hours = 86400 seconds)
-      const { data, error: urlError } = await supabase.storage
-        .from('files')
-        .createSignedUrl(fileName, 86400);
-
-      if (urlError) throw urlError;
-
-      document.getElementById('progressBar').style.width = "100%";
-      document.getElementById('status').textContent = "Done!";
-
-      // Step 3 - show the link
-      const expiry = new Date(Date.now() + 86400000);
-      document.getElementById('shareLink').value = data.signedUrl;
-      document.getElementById('expiryTime').textContent = `Expires: ${expiry.toLocaleString()}`;
-      document.getElementById('resultBox').style.display = "block";
-
-    } catch (err) {
-      document.getElementById('status').textContent = "Something went wrong. Try again.";
+      document.getElementById('fileLabel').textContent = `Selected: ${selectedFile.name}`;
       document.getElementById('uploadBtn').disabled = false;
-      console.error("Upload error:", err);
     }
-  }
 
-  function copyLink() {
-    const link = document.getElementById('shareLink');
-    navigator.clipboard.writeText(link.value)
-      .then(() => alert("Link copied to clipboard!"))
-      .catch(() => alert("Failed to copy link."));
-  }
-</script>
- 
+    async function uploadFile() {
+      if (!selectedFile) return;
+
+      const fileName = `${Date.now()}-${selectedFile.name}`;
+
+      document.getElementById('uploadBtn').disabled = true;
+      document.getElementById('status').textContent = "Uploading to cloud...";
+      document.getElementById('progressContainer').style.display = "block";
+      document.getElementById('progressBar').style.width = "30%";
+
+      try {
+        // Step 1 - upload file to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from('files')
+          .upload(fileName, selectedFile, {
+            contentType: selectedFile.type,
+          });
+
+        if (uploadError) throw uploadError;
+
+        document.getElementById('progressBar').style.width = "70%";
+        document.getElementById('status').textContent = "Generating shareable link...";
+
+        // Step 2 - generate signed URL (24 hours = 86400 seconds)
+        const { data, error: urlError } = await supabase.storage
+          .from('files')
+          .createSignedUrl(fileName, 86400);
+
+        if (urlError) throw urlError;
+
+        document.getElementById('progressBar').style.width = "100%";
+        document.getElementById('status').textContent = "Done!";
+
+        // Step 3 - show the link
+        const expiry = new Date(Date.now() + 86400000);
+        document.getElementById('shareLink').value = data.signedUrl;
+        document.getElementById('expiryTime').textContent = `Expires: ${expiry.toLocaleString()}`;
+        document.getElementById('resultBox').style.display = "block";
+
+      } catch (err) {
+        document.getElementById('status').textContent = "Something went wrong. Try again.";
+        document.getElementById('uploadBtn').disabled = false;
+        console.error("Upload error:", err);
+      }
+    }
+
+    function copyLink() {
+      const link = document.getElementById('shareLink');
+      navigator.clipboard.writeText(link.value)
+        .then(() => alert("Link copied to clipboard!"))
+        .catch(() => alert("Failed to copy link."));
+    }
+  </script>
 </body>
 </html>
